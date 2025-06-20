@@ -10,7 +10,7 @@ import {
   useForm,
   UseFormReturn,
 } from "react-hook-form";
-import { ZodType } from "zod";
+import { ZodType, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   FormControl,
@@ -25,8 +25,9 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 
 interface Props<T extends FieldValues> {
-  schema: ZodType<T>;
+  schema: z.ZodSchema<T>;
   defaultValues: T;
+  // onSubmit: (data: T) => Promise<{ success: boolean; error?: string }>;
   type: "SIGN_IN" | "SIGN_UP";
 }
 
@@ -37,9 +38,9 @@ const AuthForm = <T extends FieldValues>({
 }: Props<T>) => {
   const isSignIn = type === "SIGN_IN";
 
-  // Define your form
+  // 1. Define your form.
   const form: UseFormReturn<T> = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
     defaultValues: defaultValues as DefaultValues<T>,
   });
 
@@ -54,7 +55,7 @@ const AuthForm = <T extends FieldValues>({
       <h1 className="text-2xl font-semibold">
         {isSignIn
           ? "Welcome back to MonkeyLoco"
-          : "Create Your MonkeyLoco Acount"}
+          : "Create Your MonkeyLoco Account"}
       </h1>
       <p className="text-light-100">
         {isSignIn
