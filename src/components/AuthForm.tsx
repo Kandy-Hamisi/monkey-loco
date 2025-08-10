@@ -25,11 +25,12 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { FIELD_NAMES, FIELD_TYPES } from "@/constants";
+import { toast } from "sonner";
 
 interface Props<T extends FieldValues> {
   schema: ZodType<T>;
   defaultValues: T;
-  // onSubmit: (data: T) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (data: T) => Promise<{ success: boolean; error?: string }>;
   type: "SIGN_IN" | "SIGN_UP";
 }
 
@@ -37,7 +38,7 @@ const AuthFormer = <T extends FieldValues>({
   type,
   schema,
   defaultValues,
-  // onSubmit,
+  onSubmit,
 }: Props<T>) => {
   const router = useRouter();
   const isSignIn = type === "SIGN_IN";
@@ -51,25 +52,28 @@ const AuthFormer = <T extends FieldValues>({
   //   Define a submit handler
   const handleSubmit: SubmitHandler<T> = async (data) => {
     //     Do something with the form values
-    // const result = await onSubmit(data);
+    const result = await onSubmit(data);
+    console.log();
 
-    // if (result.success) {
-    //   toast.success("User Successfully Sign in");
-    //   router.push("/");
-    // } else {
-    //   toast.error("User failed to login");
-    // }
+    if (result.success) {
+      toast.success("User Successfully Sign in");
+      router.push("/");
+    } else {
+      toast.error("User failed to login");
+    }
 
     console.log(data);
   };
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold text-black">
-        {isSignIn ? "Welcome back to Silenzio" : "Create your Silenzio Account"}
+        {isSignIn
+          ? "Welcome back to Monkey Loco"
+          : "Create your Monkey Loco Account"}
       </h1>
       <p className="text-black">
         {isSignIn
-          ? "Join other creators in embracing the Silence"
+          ? "Join other creators in embracing the Madness"
           : "Please complete all the fields to register"}
       </p>
       <Form {...form}>
@@ -90,14 +94,14 @@ const AuthFormer = <T extends FieldValues>({
                   <FormControl>
                     <Input
                       required
-                      placeholder={field.name}
+                      placeholder={
+                        FIELD_NAMES[field.name as keyof typeof FIELD_NAMES]
+                      }
                       type={FIELD_TYPES[field.name as keyof typeof FIELD_TYPES]}
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    This is your public display name.
-                  </FormDescription>
+
                   <FormMessage />
                 </FormItem>
               )}

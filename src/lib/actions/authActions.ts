@@ -1,3 +1,5 @@
+"use server";
+
 //signup
 import { db } from "@/database/drizzle";
 import { users } from "@/database/schema";
@@ -13,6 +15,8 @@ type AuthResult = {
 export const signUp = async (params: AuthCredentials): Promise<AuthResult> => {
   const { username, email, passwordHash } = params;
 
+  console.log("user email: ", email);
+
   // check if the user already exists
   const existingUser = await db
     .select()
@@ -25,6 +29,7 @@ export const signUp = async (params: AuthCredentials): Promise<AuthResult> => {
   }
 
   const hashedPassword = await hash(passwordHash, 10);
+  console.log("Hashed Password: ", hashedPassword);
 
   try {
     await db.insert(users).values({
@@ -34,11 +39,13 @@ export const signUp = async (params: AuthCredentials): Promise<AuthResult> => {
     });
 
     //     perform any other operations like workflows for sending emails
+    console.log("User successfully created");
 
     await signInWithCredentials({ email, passwordHash });
 
     return { success: true };
   } catch (error) {
+    console.log(error);
     return { success: false, error: "There was an error while signing up" };
   }
 };
@@ -51,12 +58,13 @@ export const signInWithCredentials = async (
   try {
     const result = await signIn("credentials", {
       email,
-      passwordHash,
+      password: passwordHash,
       redirect: false,
     });
 
     if (result?.error) {
-      throw new Error(result.error);
+      // throw new Error(result.error);
+      return { success: false, error: result?.error };
     }
 
     return { success: true };

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const signInSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  passwordHash: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export const signUpSchema = z
@@ -16,7 +16,7 @@ export const signUpSchema = z
         "Username can only contain letters, numbers, and underscores",
       ),
     email: z.string().email("Invalid email address"),
-    password: z
+    passwordHash: z
       .string()
       .min(8, "Password must be at least 8 characters")
       .regex(
@@ -25,7 +25,7 @@ export const signUpSchema = z
       ),
     confirmPassword: z.string(),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.passwordHash === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });

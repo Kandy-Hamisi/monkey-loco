@@ -3,6 +3,7 @@
 import React from "react";
 import { signUpSchema } from "@/lib/validations";
 import AuthForm from "@/components/AuthForm";
+import { signUp } from "@/lib/actions/authActions";
 
 const SignUpPage = () => {
   return (
@@ -11,10 +12,11 @@ const SignUpPage = () => {
       defaultValues={{
         username: "",
         email: "",
-        password: "",
+        passwordHash: "",
         confirmPassword: "",
       }}
-      type="SIGN_IN"
+      type="SIGN_UP"
+      onSubmit={signUp}
     />
   );
 };
