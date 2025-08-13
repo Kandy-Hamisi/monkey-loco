@@ -8,6 +8,7 @@ import {
   serial,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -101,6 +102,11 @@ export const posts = pgTable("posts", {
   likesCount: integer("likes_count").default(0),
   commentsCount: integer("comments_count").default(0),
   mediaCount: integer("media_count").default(1),
+  // voting
+  dailyVotesCount: integer("daily_votes_count").default(0),
+  weeklyVotesCount: integer("weekly_votes_count").default(0),
+  isOutfitOfWeek: boolean("is_outfit_of_week").default(false),
+  // end of voting
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow(),
 });
@@ -377,4 +383,24 @@ export const challengeParticipations = pgTable(
   (table) => ({
     pk: primaryKey({ columns: [table.challengeId, table.postId] }),
   }),
+);
+
+export const outfitVotes = pgTable(
+  "outfit_votes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    postId: uuid("post_id").notNull(),
+    voterId: uuid("voter_id").notNull(),
+    category: varchar("category", { length: 20 }).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      uniqueVote: uniqueIndex("outfit_votes_unique_vote").on(
+        table.postId,
+        table.voterId,
+        table.category,
+      ),
+    };
+  },
 );

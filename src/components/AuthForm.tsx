@@ -114,7 +114,7 @@ const AuthFormer = <T extends FieldValues>({
       </Form>
 
       <p className="text-center text-base font-medium">
-        {isSignIn ? "New to Silenzio? " : "Already Have an Account? "}
+        {isSignIn ? "New to Monkey Loco? " : "Already Have an Account? "}
         <Link
           href={isSignIn ? "sign-up" : "sign-in"}
           className="font-bold text-primary"

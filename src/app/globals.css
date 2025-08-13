@@ -126,3 +126,45 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+@layer components {
+  .max-container {
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+
+  .glass-morphism {
+    background: rgba(255, 255, 255, 0.7); /* Light white with higher opacity */
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle border for depth */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow for contrast */
+  }
+
+}
+
+@layer utilities {
+  .padding {
+    @apply sm:px-16 px-8 sm:py-24 py-12
+  }
+  .padding-x {
+    @apply sm:px-16 px-8;
+  }
+  .padding-y {
+    @apply sm:py-24 py-12;
+  }
+  .padding-l {
+    @apply sm:pl-16 pl-8;
+  }
+  .padding-r {
+    @apply sm:pr-16 pr-8;
+  }
+  .padding-t {
+    @apply sm:pt-24 pt-12;
+  }
+  .padding-b {
+    @apply sm:pb-24 pb-12;
+  }
+}
