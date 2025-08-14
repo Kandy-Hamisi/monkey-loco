@@ -1,6 +1,8 @@
+CREATE TYPE "public"."contest_status" AS ENUM('UPCOMING', 'ACTIVE', 'VOTING', 'COMPLETED');--> statement-breakpoint
+CREATE TYPE "public"."contest_type" AS ENUM('DAILY', 'WEEKLY');--> statement-breakpoint
 CREATE TYPE "public"."follow_request_status" AS ENUM('PENDING', 'ACCEPTED', 'DECLINED');--> statement-breakpoint
 CREATE TYPE "public"."media_type" AS ENUM('IMAGE', 'VIDEO');--> statement-breakpoint
-CREATE TYPE "public"."notification_type" AS ENUM('LIKE', 'COMMENT', 'FOLLOW', 'FOLLOW_REQUEST', 'MENTION', 'STORY_VIEW', 'OUTFIT_FEATURE');--> statement-breakpoint
+CREATE TYPE "public"."notification_type" AS ENUM('LIKE', 'COMMENT', 'FOLLOW', 'FOLLOW_REQUEST', 'MENTION', 'STORY_VIEW', 'OUTFIT_FEATURE', 'CONTEST_WINNER', 'CONTEST_RUNNER_UP', 'CONTEST_SUBMISSION_LIKED', 'NEW_CONTEST');--> statement-breakpoint
 CREATE TYPE "public"."privacy" AS ENUM('PUBLIC', 'PRIVATE', 'FRIENDS_ONLY');--> statement-breakpoint
 CREATE TYPE "public"."status" AS ENUM('ONLINE', 'OFFLINE');--> statement-breakpoint
 CREATE TYPE "public"."story_type" AS ENUM('IMAGE', 'VIDEO', 'POLL', 'OUTFIT_OF_DAY');--> statement-breakpoint
@@ -35,6 +37,36 @@ CREATE TABLE "comments" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now(),
 	CONSTRAINT "comments_id_unique" UNIQUE("id")
+);
+--> statement-breakpoint
+CREATE TABLE "contest_rankings" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"contest_id" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
+	"post_id" uuid NOT NULL,
+	"final_rank" integer NOT NULL,
+	"total_votes" integer NOT NULL,
+	"is_winner" boolean DEFAULT false,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "contest_rankings_id_unique" UNIQUE("id")
+);
+--> statement-breakpoint
+CREATE TABLE "contest_submissions" (
+	"contest_id" uuid NOT NULL,
+	"post_id" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
+	"votes_received" integer DEFAULT 0,
+	"rank" integer,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "contest_submissions_contest_id_post_id_pk" PRIMARY KEY("contest_id","post_id")
+);
+--> statement-breakpoint
+CREATE TABLE "contest_votes" (
+	"contest_id" uuid NOT NULL,
+	"voter_id" uuid NOT NULL,
+	"submission_post_id" uuid NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "contest_votes_contest_id_voter_id_pk" PRIMARY KEY("contest_id","voter_id")
 );
 --> statement-breakpoint
 CREATE TABLE "fashion_challenges" (
@@ -92,6 +124,25 @@ CREATE TABLE "notifications" (
 	"message" text,
 	"is_read" boolean DEFAULT false,
 	"created_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "outfit_contests" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"title" varchar(100) NOT NULL,
+	"description" text,
+	"type" "contest_type" NOT NULL,
+	"status" "contest_status" DEFAULT 'UPCOMING',
+	"submission_start_date" timestamp NOT NULL,
+	"submission_end_date" timestamp NOT NULL,
+	"voting_start_date" timestamp NOT NULL,
+	"voting_end_date" timestamp NOT NULL,
+	"participants_count" integer DEFAULT 0,
+	"total_votes" integer DEFAULT 0,
+	"winner_id" uuid,
+	"winning_post_id" uuid,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now(),
+	CONSTRAINT "outfit_contests_id_unique" UNIQUE("id")
 );
 --> statement-breakpoint
 CREATE TABLE "outfit_items" (
@@ -192,6 +243,7 @@ CREATE TABLE "users" (
 	"is_verified" boolean DEFAULT false,
 	"last_activity_date" date DEFAULT now(),
 	"created_at" timestamp with time zone DEFAULT now(),
+	"updated_at" timestamp with time zone DEFAULT now(),
 	CONSTRAINT "users_id_unique" UNIQUE("id"),
 	CONSTRAINT "users_username_unique" UNIQUE("username"),
 	CONSTRAINT "users_email_unique" UNIQUE("email")
@@ -206,6 +258,15 @@ ALTER TABLE "comment_likes" ADD CONSTRAINT "comment_likes_user_id_users_id_fk" F
 ALTER TABLE "comment_likes" ADD CONSTRAINT "comment_likes_comment_id_comments_id_fk" FOREIGN KEY ("comment_id") REFERENCES "public"."comments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "comments" ADD CONSTRAINT "comments_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "comments" ADD CONSTRAINT "comments_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contest_rankings" ADD CONSTRAINT "contest_rankings_contest_id_outfit_contests_id_fk" FOREIGN KEY ("contest_id") REFERENCES "public"."outfit_contests"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contest_rankings" ADD CONSTRAINT "contest_rankings_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contest_rankings" ADD CONSTRAINT "contest_rankings_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contest_submissions" ADD CONSTRAINT "contest_submissions_contest_id_outfit_contests_id_fk" FOREIGN KEY ("contest_id") REFERENCES "public"."outfit_contests"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contest_submissions" ADD CONSTRAINT "contest_submissions_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contest_submissions" ADD CONSTRAINT "contest_submissions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contest_votes" ADD CONSTRAINT "contest_votes_contest_id_outfit_contests_id_fk" FOREIGN KEY ("contest_id") REFERENCES "public"."outfit_contests"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contest_votes" ADD CONSTRAINT "contest_votes_voter_id_users_id_fk" FOREIGN KEY ("voter_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contest_votes" ADD CONSTRAINT "contest_votes_submission_post_id_posts_id_fk" FOREIGN KEY ("submission_post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "follow_requests" ADD CONSTRAINT "follow_requests_sender_id_users_id_fk" FOREIGN KEY ("sender_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "follow_requests" ADD CONSTRAINT "follow_requests_receiver_id_users_id_fk" FOREIGN KEY ("receiver_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "followers" ADD CONSTRAINT "followers_follower_id_users_id_fk" FOREIGN KEY ("follower_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -215,6 +276,8 @@ ALTER TABLE "notifications" ADD CONSTRAINT "notifications_recipient_id_users_id_
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_sender_id_users_id_fk" FOREIGN KEY ("sender_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_comment_id_comments_id_fk" FOREIGN KEY ("comment_id") REFERENCES "public"."comments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "outfit_contests" ADD CONSTRAINT "outfit_contests_winner_id_users_id_fk" FOREIGN KEY ("winner_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "outfit_contests" ADD CONSTRAINT "outfit_contests_winning_post_id_posts_id_fk" FOREIGN KEY ("winning_post_id") REFERENCES "public"."posts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "outfit_items" ADD CONSTRAINT "outfit_items_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "post_likes" ADD CONSTRAINT "post_likes_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "post_likes" ADD CONSTRAINT "post_likes_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

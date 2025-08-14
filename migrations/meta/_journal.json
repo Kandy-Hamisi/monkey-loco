@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1754711461291,
-      "tag": "0000_colossal_pete_wisdom",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1754818810853,
-      "tag": "0001_public_the_hand",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1755085411501,
-      "tag": "0002_thankful_nightmare",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1755085917659,
-      "tag": "0003_rare_luckman",
+      "when": 1755155663504,
+      "tag": "0000_chunky_slapstick",
       "breakpoints": true
     }
   ]

@@ -41,7 +41,20 @@ export const NOTIFICATION_TYPE_ENUM = pgEnum("notification_type", [
   "MENTION",
   "STORY_VIEW",
   "OUTFIT_FEATURE",
+  "CONTEST_WINNER",
+  "CONTEST_RUNNER_UP",
+  "CONTEST_SUBMISSION_LIKED",
+  "NEW_CONTEST",
 ]);
+
+export const CONTEST_STATUS_ENUM = pgEnum("contest_status", [
+  "UPCOMING",
+  "ACTIVE",
+  "VOTING",
+  "COMPLETED",
+]);
+
+export const CONTEST_TYPE_ENUM = pgEnum("contest_type", ["DAILY", "WEEKLY"]);
 
 export const MEDIA_TYPE_ENUM = pgEnum("media_type", ["IMAGE", "VIDEO"]);
 
@@ -102,11 +115,6 @@ export const posts = pgTable("posts", {
   likesCount: integer("likes_count").default(0),
   commentsCount: integer("comments_count").default(0),
   mediaCount: integer("media_count").default(1),
-  // voting
-  dailyVotesCount: integer("daily_votes_count").default(0),
-  weeklyVotesCount: integer("weekly_votes_count").default(0),
-  isOutfitOfWeek: boolean("is_outfit_of_week").default(false),
-  // end of voting
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow(),
 });
@@ -385,22 +393,98 @@ export const challengeParticipations = pgTable(
   }),
 );
 
-export const outfitVotes = pgTable(
-  "outfit_votes",
+// =======================
+// OUTFIT CONTESTS
+// =======================
+export const outfitContests = pgTable("outfit_contests", {
+  id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
+  title: varchar("title", { length: 100 }).notNull(),
+  description: text("description"),
+  type: CONTEST_TYPE_ENUM("type").notNull(),
+  status: CONTEST_STATUS_ENUM("status").default("UPCOMING"),
+
+  // Submission period
+  submissionStartDate: timestamp("submission_start_date").notNull(),
+  submissionEndDate: timestamp("submission_end_date").notNull(),
+
+  // Voting period
+  votingStartDate: timestamp("voting_start_date").notNull(),
+  votingEndDate: timestamp("voting_end_date").notNull(),
+
+  // Contest stats
+  participantsCount: integer("participants_count").default(0),
+  totalVotes: integer("total_votes").default(0),
+
+  // Winner (nullable until contest ends)
+  winnerId: uuid("winner_id").references(() => users.id),
+  winningPostId: uuid("winning_post_id").references(() => posts.id),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// =======================
+// CONTEST SUBMISSIONS
+// =======================
+export const contestSubmissions = pgTable(
+  "contest_submissions",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
-    postId: uuid("post_id").notNull(),
-    voterId: uuid("voter_id").notNull(),
-    category: varchar("category", { length: 20 }).notNull(),
+    contestId: uuid("contest_id")
+      .references(() => outfitContests.id, { onDelete: "cascade" })
+      .notNull(),
+    postId: uuid("post_id")
+      .references(() => posts.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: uuid("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    votesReceived: integer("votes_received").default(0),
+    rank: integer("rank"), // Final ranking (set after contest ends)
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => {
-    return {
-      uniqueVote: uniqueIndex("outfit_votes_unique_vote").on(
-        table.postId,
-        table.voterId,
-        table.category,
-      ),
-    };
-  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.contestId, table.postId] }),
+  }),
 );
+
+// =======================
+// CONTEST VOTES
+// =======================
+export const contestVotes = pgTable(
+  "contest_votes",
+  {
+    contestId: uuid("contest_id")
+      .references(() => outfitContests.id, { onDelete: "cascade" })
+      .notNull(),
+    voterId: uuid("voter_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    submissionPostId: uuid("submission_post_id")
+      .references(() => posts.id, { onDelete: "cascade" })
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.contestId, table.voterId] }), // One vote per user per contest
+  }),
+);
+
+// =======================
+// CONTEST RANKINGS (Historical record)
+// =======================
+export const contestRankings = pgTable("contest_rankings", {
+  id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
+  contestId: uuid("contest_id")
+    .references(() => outfitContests.id, { onDelete: "cascade" })
+    .notNull(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  postId: uuid("post_id")
+    .references(() => posts.id, { onDelete: "cascade" })
+    .notNull(),
+  finalRank: integer("final_rank").notNull(),
+  totalVotes: integer("total_votes").notNull(),
+  isWinner: boolean("is_winner").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
