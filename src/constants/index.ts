@@ -22,7 +22,7 @@ export const navLinks = [
   },
 ];
 
-export const weeklyOutfitNominees = [
+export const weeklyOutfitWinners = [
   {
     id: "1a2b3c4d-5e6f-7890-abcd-ef1234567890",
     user: {
@@ -35,8 +35,7 @@ export const weeklyOutfitNominees = [
     },
     post: {
       id: "post-001",
-      imageUrl:
-        "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=600&fit=crop",
+      imageUrl: "./images/joshuari.jpg",
       caption:
         "Mixing vintage vibes with modern silhouettes ✨ This thrifted blazer paired with high-waisted trousers is giving me all the boss babe energy!",
       occasion: "Business Casual",
@@ -90,8 +89,7 @@ export const weeklyOutfitNominees = [
     },
     post: {
       id: "post-002",
-      imageUrl:
-        "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=400&h=600&fit=crop",
+      imageUrl: "./images/ladies-stair.jpg",
       caption:
         "Street meets chic 🔥 Loving how this cropped jacket adds edge to a simple dress. Perfect for those unpredictable weather days!",
       occasion: "Casual Day Out",
@@ -145,8 +143,7 @@ export const weeklyOutfitNominees = [
     },
     post: {
       id: "post-003",
-      imageUrl:
-        "https://images.unsplash.com/photo-1583846499770-9d14c8b6f3fb?w=400&h=600&fit=crop",
+      imageUrl: "./images/pexels-1.jpg",
       caption:
         "Channeling my inner boho goddess 🌸 This flowy dress with delicate jewelry is perfect for weekend brunches and garden parties!",
       occasion: "Brunch Date",

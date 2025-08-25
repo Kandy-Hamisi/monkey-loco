@@ -1,20 +1,21 @@
 import React from "react";
-import { weeklyOutfitNominees } from "@/constants";
-import NomineeCard from "@/components/website/NomineeCard";
+import { weeklyOutfitWinners } from "@/constants";
+import WinnerCard from "@/components/website/WinnerCard";
 
-const Nominees = () => {
+const Winners = () => {
   return (
     <div className="padding min-h-screen">
       {/*    intro*/}
-      <div>
+      <div className="mb-4">
         <h2 className="text-4xl font-bold font-grotesk">
-          This Week's <span>Nominees</span>
+          This Week's <span>Winners</span>
         </h2>
+        <p></p>
       </div>
       {/*    Display the top nominees*/}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-fr">
-        {weeklyOutfitNominees.map((nominee, index) => (
-          <NomineeCard
+        {weeklyOutfitWinners.map((nominee, index) => (
+          <WinnerCard
             key={nominee.id}
             nominee={nominee}
             isWinner={index === 0}
@@ -24,4 +25,4 @@ const Nominees = () => {
     </div>
   );
 };
-export default Nominees;
+export default Winners;

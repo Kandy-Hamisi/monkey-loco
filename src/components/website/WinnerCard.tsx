@@ -21,7 +21,7 @@ type NomineeCardProps = {
   isWinner?: boolean;
 };
 
-const NomineeCard: React.FC<NomineeCardProps> = ({
+const WinnerCard: React.FC<NomineeCardProps> = ({
   nominee,
   isWinner = false,
 }) => {
@@ -31,7 +31,7 @@ const NomineeCard: React.FC<NomineeCardProps> = ({
   return (
     <div
       className={`relative overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
-        isWinner ? "col-span-full md:col-span-2 md:row-span-2" : "col-span-1"
+        isWinner ? "col-span-full md:col-span-2" : "col-span-1"
       }`}
     >
       {/* Image Container */}
@@ -100,4 +100,4 @@ const NomineeCard: React.FC<NomineeCardProps> = ({
   );
 };
 
-export default NomineeCard;
+export default WinnerCard;
